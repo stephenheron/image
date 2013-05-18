@@ -21,13 +21,6 @@ class CreateUsersTable extends Migration {
       $table->timestamps();
     });
 
-    DB::table('users')->insert(array(
-      'username'  => 'admin',
-      'password'  => Hash::make('password'),
-      'forename'  => 'Stephen',
-      'surname'  => 'Heron'
-    ));
-	
 	}
 
 	/**
