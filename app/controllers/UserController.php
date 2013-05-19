@@ -20,21 +20,19 @@ class UserController extends \BaseController {
 	 */
 	public function store()
   {
-    $errors = User::validate(Input::all()); 
+    $user = User::create(Input::all());
 
-    if($errors){
-
-      $message = (
-        array('errors' => $errors->all())
-      );
-
-      return Response::json($message, 422);
-
-    } else {
-
-      $user = User::create(Input:all());
+    if($user->exists){
       return Response::json($user);
-
+    } else {
+      if($user->validationErrors){
+        $message = (
+          array('errors' => $user->validationErrors->all())
+        );
+        return Response::json($message, 422);
+      } else {
+        return Response::json(array('errors' => 'User was not saved'), 500);
+      }
     }
 	}
 

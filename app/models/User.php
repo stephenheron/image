@@ -25,8 +25,29 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 	 * @var array
 	 */
 
-  protected $fillable = array('username', 'password', 'forname', 'surname');
+  protected $fillable = array('username', 'password', 'forename', 'surname');
 
+  public $validationErrors;
+
+  public static function boot()
+  {
+    parent::boot();
+
+    User::creating(function($user)
+    {
+      $password = $user->password;
+      $user->password = Hash::Make($password);
+    });
+    
+    User::saving(function($user)
+    {
+      $errors = $user->validate($user->toArray(), $user->password);
+      if(count($errors)){
+        $user->validationErrors = $errors;
+        return false;
+      }
+    });
+  }
 	/**
 	 * Get the unique identifier for the user.
 	 *
@@ -54,7 +75,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 	 */
 	public function getReminderEmail()
 	{
-		return $this->email;
+		return $this->username;
   }
 
   public function images()
@@ -67,8 +88,13 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
     return $this->hasMany('SelectedTopic');
   }
 
-  public static function validate($input)
+  public function validate($input, $password = null)
   {
+    if($password){
+      $passwordArray = array('password' => $password);
+      $input = array_merge($input, $passwordArray);
+    }
+
     $rules = array(
       'username'  => 'required|email|unique:users|max:64',
       'password'  => 'required|max:64',
