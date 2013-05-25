@@ -41,7 +41,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
     
     User::saving(function($user)
     {
-      $errors = $user->validate($user->toArray(), $user->password);
+      $errors = $user->validate();
       if(count($errors)){
         $user->validationErrors = $errors;
         return false;
@@ -54,7 +54,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 	 * @return mixed
 	 */
 	public function getAuthIdentifier()
-	{
+  {
 		return $this->getKey();
 	}
 
@@ -88,8 +88,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
     return $this->hasMany('SelectedTopic');
   }
 
-  public function validate($input, $password = null)
+  public function validate()
   {
+    $input = $this->toArray();
+    $password = $this->password;
+
     if($password){
       $passwordArray = array('password' => $password);
       $input = array_merge($input, $passwordArray);

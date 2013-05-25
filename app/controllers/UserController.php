@@ -2,16 +2,10 @@
 
 class UserController extends \BaseController {
 
-	/**
-	 * Display a listing of the resource.
-	 *
-	 * @return Response
-	 */
-	public function index()
-	{
-	  return 'Hello World';	
-	}
-
+  public function __construct()
+  {
+    $this->beforeFilter('auth.basic.once', array('except' => 'store'));
+  }
 
 	/**
 	 * Store a newly created resource in storage.
@@ -43,8 +37,13 @@ class UserController extends \BaseController {
 	 * @return Response
 	 */
 	public function show($id)
-	{
-		//
+  {
+    $user = User::find($id);
+    if($user){
+      return Response::json($user);
+    } else {
+      App::abort(404);
+    }
 	}
 
 
@@ -55,8 +54,19 @@ class UserController extends \BaseController {
 	 * @return Response
 	 */
 	public function update($id)
-	{
-		//
+  {
+    $user = User::find($id);
+    if($user->id == Auth::user()->id){
+      if($user){
+        $user->update(Input::all());
+        $user->save();
+        return Response::json($user);
+      } else {
+        App::abort(404);
+      }
+    } else {
+      App::abort(403);
+    }
 	}
 
 	/**
@@ -65,9 +75,13 @@ class UserController extends \BaseController {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function destroy($id)
-	{
-		//
+	public function destroy($id){
+    $user = User::find($id);
+    if($user->id == Auth::user()->id){
+      $user->delete();
+    } else {
+      App::abort(403);
+    }
 	}
 
 }
